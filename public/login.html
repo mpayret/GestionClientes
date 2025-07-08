@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f3f3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      width: 300px;
+      text-align: center;
+    }
+
+    input {
+      width: 90%;
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 1em;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 1em;
+      background: #7b1e3d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .error {
+      color: red;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Ingreso</h2>
+    <input type="text" id="usuario" placeholder="Usuario" autocomplete="username" />
+    <input type="password" id="clave" placeholder="Contraseña" autocomplete="current-password" />
+    <button onclick="login()">Entrar</button>
+    <div id="error" class="error"></div>
+  </div>
+
+  <script>
+    async function login() {
+      const usuario = document.getElementById("usuario").value.trim();
+      const clave = document.getElementById("clave").value.trim();
+      const errorDiv = document.getElementById("error");
+
+      errorDiv.textContent = "";
+
+      if (!usuario || !clave) {
+        errorDiv.textContent = "Debe ingresar usuario y contraseña.";
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usuario, clave })
+        });
+
+        if (res.ok) {
+          localStorage.setItem("usuarioLogueado", "true");
+          window.location.href = "index.html";
+        } else {
+          const data = await res.json();
+          errorDiv.textContent = data.mensaje || "Error en el login.";
+        }
+      } catch (err) {
+        errorDiv.textContent = "No se pudo conectar con el servidor.";
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

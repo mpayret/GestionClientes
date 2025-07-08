@@ -1,0 +1,32 @@
+[
+  {
+    "id": "d7db3c2a-8b0b-42a8-b6a4-8e45c9f6ac03",
+    "nombre": "Fernando Payret",
+    "rut": "123456789012",
+    "vencDGI": "2025-08-22",
+    "claveDGI": "hjb",
+    "vencBPS": "2025-07-04",
+    "claveBPS": "shtrth",
+    "cumple": "2025-07-06"
+  },
+  {
+    "id": "981a0da1-28de-44cf-9a9b-607a492dadbb",
+    "nombre": "Adriana Coitinho",
+    "rut": "123456789012",
+    "vencDGI": "2025-06-25",
+    "claveDGI": "dfgn",
+    "vencBPS": "2025-06-02",
+    "claveBPS": "dgbd",
+    "cumple": "2025-06-11"
+  },
+  {
+    "id": "2a3b79fa-50c2-45d7-a67a-a69d5cd264cd",
+    "nombre": "Clarita",
+    "rut": "987654321098",
+    "vencDGI": "2026-03-20",
+    "claveDGI": "afv",
+    "vencBPS": "2025-08-01",
+    "claveBPS": "",
+    "cumple": "2024-08-12"
+  }
+]

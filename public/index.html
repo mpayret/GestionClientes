@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gestión de Clientes</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 4px; text-align: left; }
+    .red { background: #f8d7da; }
+    .yellow { background: #fff3cd; }
+    .white { background: #fff; }
+    th {
+      background-color: #7b1e3d;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+  <img src="logo.png" alt="Logo" style="height: 60px; float: right; margin-top: -20px;">
+  <h2>Clientes</h2>
+  <input type="text" id="search" placeholder="Buscar por nombre">
+  <table id="clientesTable">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>RUT</th>
+        <th>Venc. DGI</th>
+        <th>Clave DGI</th>
+        <th>Venc. BPS</th>
+        <th>Clave BPS</th>
+        <th>Cumpleaños</th>
+        <th>Editar</th>
+        <th>Borrar</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h3>Agregar / Editar Cliente</h3>
+  <form id="clienteForm">
+    <input type="hidden" id="editId">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="text" id="rut" placeholder="12 dígitos" required maxlength="12" pattern="\d{12}">
+    <input type="date" id="vencDGI">
+    <input type="text" id="claveDGI" placeholder="Clave DGI">
+    <input type="date" id="vencBPS">
+    <input type="text" id="claveBPS" placeholder="Clave BPS">
+    <input type="date" id="cumple">
+    <button type="submit">Guardar</button>
+  </form>
+
+  <script>
+    if (localStorage.getItem("usuarioLogueado") !== "true") {
+      window.location.href = "login.html";
+    }
+    let clientes = [];
+
+    async function cargarClientes() {
+      const res = await fetch("/api/clientes");
+      clientes = await res.json();
+      mostrarClientes();
+    }
+
+    function mostrarClientes(filtro = "") {
+      const tbody = document.querySelector("#clientesTable tbody");
+      tbody.innerHTML = "";
+
+      clientes
+        .filter(c => c.nombre.toLowerCase().includes(filtro.toLowerCase()))
+        .forEach(c => {
+          const dias = c.vencDGI ? Math.ceil((new Date(c.vencDGI) - new Date()) / 86400000) : 9999;
+          let clase = "white";
+          if (dias <= 30) clase = "red";
+          else if (dias <= 60) clase = "yellow";
+
+          tbody.innerHTML += `
+            <tr class="${clase}">
+              <td>${c.nombre}</td>
+              <td>${c.rut}</td>
+              <td>${formatearFecha(c.vencDGI)}</td>
+              <td>${c.claveDGI || ""}</td>
+              <td>${formatearFecha(c.vencBPS)}</td>
+              <td>${c.claveBPS || ""}</td>
+              <td>${formatearFecha(c.cumple)}</td>
+              <td><button type="button" onclick="editarCliente('${c.id}')">✏️</button></td>
+              <td><button type="button" onclick="borrarCliente('${c.id}')">🗑️</button></td>
+            </tr>`;
+        });
+    }
+
+    function formatearFecha(f) {
+      if (!f) return "";
+      const parts = f.split("-");
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      return d.toLocaleDateString();
+    }
+
+    document.getElementById("search").addEventListener("input", (e) => {
+      mostrarClientes(e.target.value);
+    });
+
+    document.getElementById("clienteForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const cliente = {
+        nombre: document.getElementById("nombre").value,
+        rut: document.getElementById("rut").value,
+        vencDGI: document.getElementById("vencDGI").value,
+        claveDGI: document.getElementById("claveDGI").value,
+        vencBPS: document.getElementById("vencBPS").value,
+        claveBPS: document.getElementById("claveBPS").value,
+        cumple: document.getElementById("cumple").value,
+      };
+
+      const id = document.getElementById("editId").value;
+
+      document.getElementById("rut").addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, "").slice(0, 12);
+      });
+
+      
+      let res;
+      if (id) {
+        // Actualizar cliente existente
+        res = await fetch(`/api/clientes/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cliente),
+        });
+      } else {
+        // Crear nuevo cliente
+        res = await fetch(`/api/clientes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cliente),
+        });
+      }
+
+      if (res.ok) {
+        await cargarClientes();
+        e.target.reset();
+        document.getElementById("editId").value = "";
+      } else {
+        alert("Error al guardar cliente");
+      }
+    });
+
+    function editarCliente(id) {
+      const c = clientes.find(c => c.id === id);
+      if (!c) return;
+
+      document.getElementById("editId").value = c.id;
+      document.getElementById("nombre").value = c.nombre;
+      document.getElementById("rut").value = c.rut;
+      document.getElementById("vencDGI").value = c.vencDGI || "";
+      document.getElementById("claveDGI").value = c.claveDGI || "";
+      document.getElementById("vencBPS").value = c.vencBPS || "";
+      document.getElementById("claveBPS").value = c.claveBPS || "";
+      document.getElementById("cumple").value = c.cumple || "";
+    }
+
+    async function borrarCliente(id) {
+      const c = clientes.find(c => c.id === id);
+      if (!c) return;
+
+      const resultado = await Swal.fire({
+        title: `¿Estás seguro que deseas eliminar a ${c.nombre}?`,
+        text: "Esta acción no se puede deshacer.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar"
+      });
+
+      if (resultado.isConfirmed) {
+        const res = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          await cargarClientes();
+          Swal.fire("Eliminado", `El cliente ${c.nombre} ha sido eliminado.`, "success");
+        } else {
+          alert("Error al eliminar cliente");
+        }
+      }
+    }
+
+    // Cargar clientes al iniciar
+    cargarClientes();
+  </script>
+</body>
+</html>
