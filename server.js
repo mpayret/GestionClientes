@@ -12,6 +12,8 @@ const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 
 // Middleware para leer JSON y formularios HTML
 app.use(bodyParser.json());
+
+
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Archivos estáticos en /public (HTML, CSS, JS, imágenes)
@@ -111,11 +113,12 @@ app.post("/api/login", (req, res) => {
   const encontrado = usuarios.find(u => u.usuario === usuario && u.clave === clave);
 
   if (encontrado) {
-    res.redirect("/inicio.html"); // Login exitoso → redirigir
+    res.redirect("/inicio.html");  // redirige si el login es correcto
   } else {
-    res.status(401).send("Usuario o clave incorrectos"); // Login fallido
+    res.status(401).send("Usuario o clave incorrectos"); // mensaje simple por ahora
   }
 });
+
 
 // Inicia el servidor
 app.listen(PORT, () => {
