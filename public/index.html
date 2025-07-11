@@ -6,7 +6,7 @@
   <style>
     body { font-family: Arial; margin: 20px; }
     table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 4px; text-align: left; }
+    th, td { border: 1px solid #ccc; padding: 4px; text-align: left; vertical-align: middle; }
     .red { background: #f8d7da; }
     .yellow { background: #fff3cd; }
     .white { background: #fff; }
@@ -24,6 +24,16 @@
     }
     button:hover {
       color: #7b1e3d;
+    }
+    /* Alineación flex para celdas con botón copiar */
+    .celda-copiable {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .celda-copiable button {
+      flex-shrink: 0;
+      font-size: 1.1em;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -107,17 +117,17 @@
           tbody.innerHTML += `
             <tr class="${clase}">
               <td>${c.nombre}</td>
-              <td>
+              <td class="celda-copiable">
                 ${c.rut || ""}
                 ${c.rut ? `<button title="Copiar RUT" onclick="copiarTexto('${c.rut}')">📋</button>` : ""}
               </td>
               <td>${formatearFecha(c.vencDGI)}</td>
-              <td>
+              <td class="celda-copiable">
                 ${c.claveDGI || ""}
                 ${c.claveDGI ? `<button title="Copiar Clave DGI" onclick="copiarTexto('${c.claveDGI}')">📋</button>` : ""}
               </td>
               <td>${formatearFecha(c.vencBPS)}</td>
-              <td>
+              <td class="celda-copiable">
                 ${c.claveBPS || ""}
                 ${c.claveBPS ? `<button title="Copiar Clave BPS" onclick="copiarTexto('${c.claveBPS}')">📋</button>` : ""}
               </td>
