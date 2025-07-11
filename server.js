@@ -6,15 +6,23 @@ const crypto = require("crypto");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 const CLIENTES_FILE = path.join(__dirname, "clientes.json");
+const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 
+// Middleware para leer JSON y formularios HTML
 app.use(bodyParser.json());
-app.use(express.static("public"));
+app.use(bodyParser.urlencoded({ extended: true }));
 
+// Archivos estáticos en /public (HTML, CSS, JS, imágenes)
+app.use(express.static(path.join(__dirname, "public")));
+
+// Redirige "/" a login.html
 app.get("/", (req, res) => {
   res.redirect("/login.html");
 });
 
+// Función para cargar clientes
 function cargarClientes() {
   if (!fs.existsSync(CLIENTES_FILE)) return [];
   const data = fs.readFileSync(CLIENTES_FILE, "utf-8");
@@ -25,16 +33,18 @@ function cargarClientes() {
   }
 }
 
+// Función para guardar clientes
 function guardarClientes(clientes) {
   fs.writeFileSync(CLIENTES_FILE, JSON.stringify(clientes, null, 2), "utf-8");
 }
 
+// API: Obtener lista de clientes
 app.get("/api/clientes", (req, res) => {
   const clientes = cargarClientes();
   res.json(clientes);
 });
 
-// POST para crear cliente sin id en URL
+// API: Crear nuevo cliente
 app.post("/api/clientes", (req, res) => {
   const clientes = cargarClientes();
   const nuevoCliente = {
@@ -52,7 +62,7 @@ app.post("/api/clientes", (req, res) => {
   res.status(201).json(nuevoCliente);
 });
 
-// PUT para actualizar cliente existente
+// API: Actualizar cliente existente
 app.put("/api/clientes/:id", (req, res) => {
   const clientes = cargarClientes();
   const id = req.params.id;
@@ -75,6 +85,7 @@ app.put("/api/clientes/:id", (req, res) => {
   res.sendStatus(200);
 });
 
+// API: Eliminar cliente
 app.delete("/api/clientes/:id", (req, res) => {
   let clientes = cargarClientes();
   clientes = clientes.filter(c => c.id !== req.params.id);
@@ -82,12 +93,7 @@ app.delete("/api/clientes/:id", (req, res) => {
   res.sendStatus(200);
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
-
-const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
-
+// Función para cargar usuarios
 function cargarUsuarios() {
   if (!fs.existsSync(USUARIOS_FILE)) return [];
   const data = fs.readFileSync(USUARIOS_FILE, "utf-8");
@@ -98,14 +104,20 @@ function cargarUsuarios() {
   }
 }
 
+// Login: valida usuario y redirige
 app.post("/api/login", (req, res) => {
   const { usuario, clave } = req.body;
   const usuarios = cargarUsuarios();
   const encontrado = usuarios.find(u => u.usuario === usuario && u.clave === clave);
 
   if (encontrado) {
-    res.json({ ok: true });
+    res.redirect("/inicio.html"); // Login exitoso → redirigir
   } else {
-    res.status(401).json({ ok: false, mensaje: "Credenciales inválidas" });
+    res.status(401).send("Usuario o clave incorrectos"); // Login fallido
   }
+});
+
+// Inicia el servidor
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
