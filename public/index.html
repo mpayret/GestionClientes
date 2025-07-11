@@ -40,9 +40,8 @@
     <tbody></tbody>
   </table>
 
-  <h3>Agregar / Editar Cliente</h3>
+  <h3>Agregar Cliente</h3>
   <form id="clienteForm">
-    <input type="hidden" id="editId">
     <input type="text" id="nombre" placeholder="Nombre" required>
     <input type="text" id="rut" placeholder="12 dígitos" required maxlength="12" pattern="\d{12}">
     <input type="date" id="vencDGI">
@@ -57,12 +56,20 @@
     if (localStorage.getItem("usuarioLogueado") !== "true") {
       window.location.href = "login.html";
     }
+
     let clientes = [];
 
     async function cargarClientes() {
       const res = await fetch("/api/clientes");
       clientes = await res.json();
       mostrarClientes();
+    }
+
+    function formatearFecha(f) {
+      if (!f) return "";
+      const parts = f.split("-");
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      return d.toLocaleDateString();
     }
 
     function mostrarClientes(filtro = "") {
@@ -92,13 +99,6 @@
         });
     }
 
-    function formatearFecha(f) {
-      if (!f) return "";
-      const parts = f.split("-");
-      const d = new Date(parts[0], parts[1] - 1, parts[2]);
-      return d.toLocaleDateString();
-    }
-
     document.getElementById("search").addEventListener("input", (e) => {
       mostrarClientes(e.target.value);
     });
@@ -116,51 +116,65 @@
         cumple: document.getElementById("cumple").value,
       };
 
-      const id = document.getElementById("editId").value;
-
-      document.getElementById("rut").addEventListener("input", function () {
-        this.value = this.value.replace(/\D/g, "").slice(0, 12);
+      const res = await fetch(`/api/clientes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cliente),
       });
-
-      
-      let res;
-      if (id) {
-        // Actualizar cliente existente
-        res = await fetch(`/api/clientes/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cliente),
-        });
-      } else {
-        // Crear nuevo cliente
-        res = await fetch(`/api/clientes`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cliente),
-        });
-      }
 
       if (res.ok) {
         await cargarClientes();
         e.target.reset();
-        document.getElementById("editId").value = "";
       } else {
         alert("Error al guardar cliente");
       }
     });
 
     function editarCliente(id) {
-      const c = clientes.find(c => c.id === id);
-      if (!c) return;
+      const fila = [...document.querySelectorAll("#clientesTable tbody tr")].find(
+        tr => tr.querySelector("button[onclick*='" + id + "']")
+      );
 
-      document.getElementById("editId").value = c.id;
-      document.getElementById("nombre").value = c.nombre;
-      document.getElementById("rut").value = c.rut;
-      document.getElementById("vencDGI").value = c.vencDGI || "";
-      document.getElementById("claveDGI").value = c.claveDGI || "";
-      document.getElementById("vencBPS").value = c.vencBPS || "";
-      document.getElementById("claveBPS").value = c.claveBPS || "";
-      document.getElementById("cumple").value = c.cumple || "";
+      const cliente = clientes.find(c => c.id === id);
+      if (!fila || !cliente) return;
+
+      fila.innerHTML = `
+        <td><input type="text" value="${cliente.nombre}" id="edit-nombre-${id}"></td>
+        <td><input type="text" value="${cliente.rut}" id="edit-rut-${id}"></td>
+        <td><input type="date" value="${cliente.vencDGI || ''}" id="edit-vencDGI-${id}"></td>
+        <td><input type="text" value="${cliente.claveDGI || ''}" id="edit-claveDGI-${id}"></td>
+        <td><input type="date" value="${cliente.vencBPS || ''}" id="edit-vencBPS-${id}"></td>
+        <td><input type="text" value="${cliente.claveBPS || ''}" id="edit-claveBPS-${id}"></td>
+        <td><input type="date" value="${cliente.cumple || ''}" id="edit-cumple-${id}"></td>
+        <td colspan="2">
+          <button onclick="guardarEdicion('${id}')">💾 Guardar</button>
+          <button onclick="mostrarClientes()">❌ Cancelar</button>
+        </td>
+      `;
+    }
+
+    async function guardarEdicion(id) {
+      const clienteActualizado = {
+        nombre: document.getElementById(`edit-nombre-${id}`).value,
+        rut: document.getElementById(`edit-rut-${id}`).value,
+        vencDGI: document.getElementById(`edit-vencDGI-${id}`).value,
+        claveDGI: document.getElementById(`edit-claveDGI-${id}`).value,
+        vencBPS: document.getElementById(`edit-vencBPS-${id}`).value,
+        claveBPS: document.getElementById(`edit-claveBPS-${id}`).value,
+        cumple: document.getElementById(`edit-cumple-${id}`).value,
+      };
+
+      const res = await fetch(`/api/clientes/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(clienteActualizado),
+      });
+
+      if (res.ok) {
+        await cargarClientes();
+      } else {
+        alert("Error al guardar los cambios");
+      }
     }
 
     async function borrarCliente(id) {
