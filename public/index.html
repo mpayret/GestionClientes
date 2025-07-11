@@ -138,19 +138,19 @@
       const cliente = clientes.find(c => c.id === id);
       if (!fila || !cliente) return;
 
-      fila.innerHTML = `
-        <td><input type="text" value="${cliente.nombre}" id="edit-nombre-${id}"></td>
-        <td><input type="text" value="${cliente.rut}" id="edit-rut-${id}"></td>
-        <td><input type="date" value="${cliente.vencDGI || ''}" id="edit-vencDGI-${id}"></td>
-        <td><input type="text" value="${cliente.claveDGI || ''}" id="edit-claveDGI-${id}"></td>
-        <td><input type="date" value="${cliente.vencBPS || ''}" id="edit-vencBPS-${id}"></td>
-        <td><input type="text" value="${cliente.claveBPS || ''}" id="edit-claveBPS-${id}"></td>
-        <td><input type="date" value="${cliente.cumple || ''}" id="edit-cumple-${id}"></td>
-        <td colspan="2">
-          <button onclick="guardarEdicion('${id}')">💾 Guardar</button>
-          <button onclick="mostrarClientes()">❌ Cancelar</button>
-        </td>
-      `;
+        fila.innerHTML = `
+          <td><input type="text" value="${cliente.nombre}" id="edit-nombre-${id}"></td>
+          <td><input type="text" value="${cliente.rut}" id="edit-rut-${id}"></td>
+          <td><input type="date" value="${cliente.vencDGI || ''}" id="edit-vencDGI-${id}"></td>
+          <td><input type="text" value="${cliente.claveDGI || ''}" id="edit-claveDGI-${id}"></td>
+          <td><input type="date" value="${cliente.vencBPS || ''}" id="edit-vencBPS-${id}"></td>
+          <td><input type="text" value="${cliente.claveBPS || ''}" id="edit-claveBPS-${id}"></td>
+          <td><input type="date" value="${cliente.cumple || ''}" id="edit-cumple-${id}"></td>
+          <td colspan="2">
+            <button title="Guardar" onclick="guardarEdicion('${id}')">💾</button>
+            <button title="Cancelar" onclick="mostrarClientes()">❌</button>
+          </td>
+        `;
     }
 
     async function guardarEdicion(id) {
