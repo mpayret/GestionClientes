@@ -19,6 +19,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Archivos estáticos en /public (HTML, CSS, JS, imágenes)
 app.use(express.static(path.join(__dirname, "public")));
 
+const session = require('express-session');
+
+app.use(session({
+  secret: 'mi_clave_secreta',
+  resave: false,
+  saveUninitialized: false
+}));
+
+
 // Redirige "/" a login.html
 app.get("/", (req, res) => {
   res.redirect("/login.html");
