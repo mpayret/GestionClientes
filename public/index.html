@@ -28,12 +28,22 @@
     /* Alineación flex para celdas con botón copiar */
     .celda-copiable {
       display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 6px;
+    }
+    .celda-copiable span {
+      flex-grow: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
     .celda-copiable button {
       flex-shrink: 0;
       font-size: 1.1em;
+      cursor: pointer;
+      background: none;
+      border: none;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -118,17 +128,17 @@
             <tr class="${clase}">
               <td>${c.nombre}</td>
               <td class="celda-copiable">
-                ${c.rut || ""}
+                <span>${c.rut || ""}</span>
                 ${c.rut ? `<button title="Copiar RUT" onclick="copiarTexto('${c.rut}')">📋</button>` : ""}
               </td>
               <td>${formatearFecha(c.vencDGI)}</td>
               <td class="celda-copiable">
-                ${c.claveDGI || ""}
+                <span>${c.claveDGI || ""}</span>
                 ${c.claveDGI ? `<button title="Copiar Clave DGI" onclick="copiarTexto('${c.claveDGI}')">📋</button>` : ""}
               </td>
               <td>${formatearFecha(c.vencBPS)}</td>
               <td class="celda-copiable">
-                ${c.claveBPS || ""}
+                <span>${c.claveBPS || ""}</span>
                 ${c.claveBPS ? `<button title="Copiar Clave BPS" onclick="copiarTexto('${c.claveBPS}')">📋</button>` : ""}
               </td>
               <td>${formatearFecha(c.cumple)}</td>
