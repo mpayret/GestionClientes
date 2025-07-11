@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
+const session = require("express-session");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,25 +11,21 @@ const PORT = process.env.PORT || 3000;
 const CLIENTES_FILE = path.join(__dirname, "clientes.json");
 const USUARIOS_FILE = path.join(__dirname, "usuarios.json");
 
-// Middleware para leer JSON y formularios HTML
+// Middleware
 app.use(bodyParser.json());
-
-
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Archivos estáticos en /public (HTML, CSS, JS, imágenes)
+// Servir archivos estáticos (login.html, css, etc.)
 app.use(express.static(path.join(__dirname, "public")));
 
-const session = require('express-session');
-
+// Configurar sesiones
 app.use(session({
   secret: 'mi_clave_secreta',
   resave: false,
   saveUninitialized: false
 }));
 
-
-// Redirige "/" a login.html
+// Redirigir raíz a login.html
 app.get("/", (req, res) => {
   res.redirect("/login.html");
 });
@@ -49,13 +46,12 @@ function guardarClientes(clientes) {
   fs.writeFileSync(CLIENTES_FILE, JSON.stringify(clientes, null, 2), "utf-8");
 }
 
-// API: Obtener lista de clientes
+// Rutas de API para clientes
 app.get("/api/clientes", (req, res) => {
   const clientes = cargarClientes();
   res.json(clientes);
 });
 
-// API: Crear nuevo cliente
 app.post("/api/clientes", (req, res) => {
   const clientes = cargarClientes();
   const nuevoCliente = {
@@ -73,12 +69,10 @@ app.post("/api/clientes", (req, res) => {
   res.status(201).json(nuevoCliente);
 });
 
-// API: Actualizar cliente existente
 app.put("/api/clientes/:id", (req, res) => {
   const clientes = cargarClientes();
   const id = req.params.id;
   const index = clientes.findIndex(c => c.id === id);
-
   if (index < 0) return res.sendStatus(404);
 
   clientes[index] = {
@@ -96,7 +90,6 @@ app.put("/api/clientes/:id", (req, res) => {
   res.sendStatus(200);
 });
 
-// API: Eliminar cliente
 app.delete("/api/clientes/:id", (req, res) => {
   let clientes = cargarClientes();
   clientes = clientes.filter(c => c.id !== req.params.id);
@@ -115,21 +108,30 @@ function cargarUsuarios() {
   }
 }
 
-// Login: valida usuario y redirige
+// ✅ Login: guardar sesión y redirigir a /inicio
 app.post("/api/login", (req, res) => {
   const { usuario, clave } = req.body;
   const usuarios = cargarUsuarios();
   const encontrado = usuarios.find(u => u.usuario === usuario && u.clave === clave);
 
   if (encontrado) {
-    res.redirect("/inicio.html");  // redirige si el login es correcto
+    req.session.usuario = usuario; // 🔐 Guardamos en sesión
+    res.redirect("/inicio");       // 👈 Usamos la ruta protegida, no .html
   } else {
-    res.status(401).send("Usuario o clave incorrectos"); // mensaje simple por ahora
+    res.status(401).send("Usuario o clave incorrectos");
   }
 });
 
+// ✅ Ruta protegida: solo entra si está logueado
+app.get("/inicio", (req, res) => {
+  if (req.session && req.session.usuario) {
+    res.sendFile(path.join(__dirname, "views", "inicio.html")); // Moved fuera de public/
+  } else {
+    res.redirect("/login.html");
+  }
+});
 
-// Inicia el servidor
+// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
