@@ -113,6 +113,11 @@
 
       clientes
         .filter(c => c.nombre.toLowerCase().includes(filtro.toLowerCase()))
+        .sort((a, b) => {
+          const fa = a.vencDGI ? new Date(a.vencDGI) : new Date('9999-12-31');
+          const fb = b.vencDGI ? new Date(b.vencDGI) : new Date('9999-12-31');
+          return fa - fb;
+        })
         .forEach(c => {
           const dias = c.vencDGI ? Math.ceil((new Date(c.vencDGI) - new Date()) / 86400000) : 9999;
           let clase = "white";
