@@ -16,16 +16,15 @@
       font-weight: bold;
     }
     button {
-      margin-left: 5px;
       cursor: pointer;
       border: none;
       background: none;
-      font-size: 1em;
+      font-size: 1.2em;
     }
     button:hover {
       color: #7b1e3d;
     }
-    /* Alineación flex para celdas con botón copiar */
+
     .celda-copiable {
       display: flex;
       justify-content: space-between;
@@ -40,10 +39,6 @@
     }
     .celda-copiable button {
       flex-shrink: 0;
-      font-size: 1.1em;
-      cursor: pointer;
-      background: none;
-      border: none;
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -89,7 +84,7 @@
     <input type="date" id="vencBPS">
     <input type="text" id="claveBPS" placeholder="Clave BPS">
     <input type="date" id="cumple">
-    <button type="submit">Guardar</button>
+    <button type="submit" title="Guardar">💾</button>
   </form>
 
   <script>
@@ -127,20 +122,23 @@
           tbody.innerHTML += `
             <tr class="${clase}">
               <td>${c.nombre}</td>
-              <td class="celda-copiable">
-                <span>${c.rut || ""}</span>
-                ${c.rut ? `<button title="Copiar RUT" onclick="copiarTexto('${c.rut}')">📋</button>` : ""}
-              </td>
+              ${
+                c.rut
+                  ? `<td class="celda-copiable"><span>${c.rut}</span><button title="Copiar RUT" onclick="copiarTexto('${c.rut}')">📋</button></td>`
+                  : `<td></td>`
+              }
               <td>${formatearFecha(c.vencDGI)}</td>
-              <td class="celda-copiable">
-                <span>${c.claveDGI || ""}</span>
-                ${c.claveDGI ? `<button title="Copiar Clave DGI" onclick="copiarTexto('${c.claveDGI}')">📋</button>` : ""}
-              </td>
+              ${
+                c.claveDGI
+                  ? `<td class="celda-copiable"><span>${c.claveDGI}</span><button title="Copiar Clave DGI" onclick="copiarTexto('${c.claveDGI}')">📋</button></td>`
+                  : `<td></td>`
+              }
               <td>${formatearFecha(c.vencBPS)}</td>
-              <td class="celda-copiable">
-                <span>${c.claveBPS || ""}</span>
-                ${c.claveBPS ? `<button title="Copiar Clave BPS" onclick="copiarTexto('${c.claveBPS}')">📋</button>` : ""}
-              </td>
+              ${
+                c.claveBPS
+                  ? `<td class="celda-copiable"><span>${c.claveBPS}</span><button title="Copiar Clave BPS" onclick="copiarTexto('${c.claveBPS}')">📋</button></td>`
+                  : `<td></td>`
+              }
               <td>${formatearFecha(c.cumple)}</td>
               <td><button type="button" onclick="editarCliente('${c.id}')">✏️</button></td>
               <td><button type="button" onclick="borrarCliente('${c.id}')">🗑️</button></td>
