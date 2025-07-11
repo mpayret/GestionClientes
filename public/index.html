@@ -15,12 +15,32 @@
       color: white;
       font-weight: bold;
     }
+    button {
+      margin-left: 5px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 1em;
+    }
+    button:hover {
+      color: #7b1e3d;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
   <img src="logo.png" alt="Logo" style="height: 60px; float: right; margin-top: -20px;">
+
+  <div style="margin-bottom: 15px;">
+    <a href="https://servicios.dgi.gub.uy/serviciosenlinea" target="_blank" style="margin-right: 10px;">
+      <img src="dgi.png" alt="DGI" style="height: 30px; vertical-align: middle; cursor: pointer;">
+    </a>
+    <a href="https://www.bps.gub.uy/19382/banco-de-prevision-social.html" target="_blank">
+      <img src="bps.png" alt="BPS" style="height: 30px; vertical-align: middle; cursor: pointer;">
+    </a>
+  </div>
+
   <h2>Clientes</h2>
   <input type="text" id="search" placeholder="Buscar por nombre">
   <table id="clientesTable">
@@ -87,11 +107,20 @@
           tbody.innerHTML += `
             <tr class="${clase}">
               <td>${c.nombre}</td>
-              <td>${c.rut}</td>
+              <td>
+                ${c.rut || ""}
+                ${c.rut ? `<button title="Copiar RUT" onclick="copiarTexto('${c.rut}')">📋</button>` : ""}
+              </td>
               <td>${formatearFecha(c.vencDGI)}</td>
-              <td>${c.claveDGI || ""}</td>
+              <td>
+                ${c.claveDGI || ""}
+                ${c.claveDGI ? `<button title="Copiar Clave DGI" onclick="copiarTexto('${c.claveDGI}')">📋</button>` : ""}
+              </td>
               <td>${formatearFecha(c.vencBPS)}</td>
-              <td>${c.claveBPS || ""}</td>
+              <td>
+                ${c.claveBPS || ""}
+                ${c.claveBPS ? `<button title="Copiar Clave BPS" onclick="copiarTexto('${c.claveBPS}')">📋</button>` : ""}
+              </td>
               <td>${formatearFecha(c.cumple)}</td>
               <td><button type="button" onclick="editarCliente('${c.id}')">✏️</button></td>
               <td><button type="button" onclick="borrarCliente('${c.id}')">🗑️</button></td>
@@ -138,19 +167,19 @@
       const cliente = clientes.find(c => c.id === id);
       if (!fila || !cliente) return;
 
-        fila.innerHTML = `
-          <td><input type="text" value="${cliente.nombre}" id="edit-nombre-${id}"></td>
-          <td><input type="text" value="${cliente.rut}" id="edit-rut-${id}"></td>
-          <td><input type="date" value="${cliente.vencDGI || ''}" id="edit-vencDGI-${id}"></td>
-          <td><input type="text" value="${cliente.claveDGI || ''}" id="edit-claveDGI-${id}"></td>
-          <td><input type="date" value="${cliente.vencBPS || ''}" id="edit-vencBPS-${id}"></td>
-          <td><input type="text" value="${cliente.claveBPS || ''}" id="edit-claveBPS-${id}"></td>
-          <td><input type="date" value="${cliente.cumple || ''}" id="edit-cumple-${id}"></td>
-          <td colspan="2">
-            <button title="Guardar" onclick="guardarEdicion('${id}')">💾</button>
-            <button title="Cancelar" onclick="mostrarClientes()">❌</button>
-          </td>
-        `;
+      fila.innerHTML = `
+        <td><input type="text" value="${cliente.nombre}" id="edit-nombre-${id}"></td>
+        <td><input type="text" value="${cliente.rut}" id="edit-rut-${id}"></td>
+        <td><input type="date" value="${cliente.vencDGI || ''}" id="edit-vencDGI-${id}"></td>
+        <td><input type="text" value="${cliente.claveDGI || ''}" id="edit-claveDGI-${id}"></td>
+        <td><input type="date" value="${cliente.vencBPS || ''}" id="edit-vencBPS-${id}"></td>
+        <td><input type="text" value="${cliente.claveBPS || ''}" id="edit-claveBPS-${id}"></td>
+        <td><input type="date" value="${cliente.cumple || ''}" id="edit-cumple-${id}"></td>
+        <td colspan="2">
+          <button title="Guardar" onclick="guardarEdicion('${id}')">💾</button>
+          <button title="Cancelar" onclick="mostrarClientes()">❌</button>
+        </td>
+      `;
     }
 
     async function guardarEdicion(id) {
@@ -201,6 +230,21 @@
           alert("Error al eliminar cliente");
         }
       }
+    }
+
+    function copiarTexto(texto) {
+      navigator.clipboard.writeText(texto).then(() => {
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "Copiado al portapapeles",
+          showConfirmButton: false,
+          timer: 1200
+        });
+      }).catch(err => {
+        alert("No se pudo copiar al portapapeles");
+      });
     }
 
     // Cargar clientes al iniciar
