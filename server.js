@@ -125,7 +125,7 @@ app.post("/api/login", (req, res) => {
 // ✅ Ruta protegida: solo entra si está logueado
 app.get("/inicio", (req, res) => {
   if (req.session && req.session.usuario) {
-    res.sendFile(path.join(__dirname, "views", "inicio.html")); // Moved fuera de public/
+    res.sendFile(path.join(__dirname, "inicio.html")); // Moved fuera de public/
   } else {
     res.redirect("/login.html");
   }
