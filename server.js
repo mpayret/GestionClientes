@@ -11,6 +11,10 @@ const CLIENTES_FILE = path.join(__dirname, "clientes.json");
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+  res.redirect("/login.html");
+});
+
 function cargarClientes() {
   if (!fs.existsSync(CLIENTES_FILE)) return [];
   const data = fs.readFileSync(CLIENTES_FILE, "utf-8");
