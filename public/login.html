@@ -76,7 +76,7 @@
 
         if (res.ok) {
           localStorage.setItem("usuarioLogueado", "true");
-          window.location.href = "inicio.html";
+          window.location.href = "/inicio";
         } else {
           const data = await res.json();
           errorDiv.textContent = data.mensaje || "Error en el login.";
