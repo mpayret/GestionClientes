@@ -108,27 +108,34 @@ function cargarUsuarios() {
   }
 }
 
-// ✅ Login: guardar sesión y redirigir a /inicio
+// ✅ Login (adaptado para fetch)
 app.post("/api/login", (req, res) => {
   const { usuario, clave } = req.body;
   const usuarios = cargarUsuarios();
   const encontrado = usuarios.find(u => u.usuario === usuario && u.clave === clave);
 
   if (encontrado) {
-    req.session.usuario = usuario; // 🔐 Guardamos en sesión
-    res.redirect("/inicio");       // 👈 Usamos la ruta protegida, no .html
+    req.session.usuario = usuario;
+    res.status(200).json({ ok: true });
   } else {
-    res.status(401).send("Usuario o clave incorrectos");
+    res.status(401).json({ mensaje: "Usuario o clave incorrectos" });
   }
 });
 
-// ✅ Ruta protegida: solo entra si está logueado
+// ✅ Ruta protegida
 app.get("/inicio", (req, res) => {
   if (req.session && req.session.usuario) {
-    res.sendFile(path.join(__dirname, "inicio.html")); // Moved fuera de public/
+    res.sendFile(path.join(__dirname, "inicio.html")); // Debe estar fuera de public/
   } else {
     res.redirect("/login.html");
   }
+});
+
+// 🔓 Cerrar sesión
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/login.html");
+  });
 });
 
 // Iniciar servidor
